@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from Herramientas.get_direccion_mike import get_direccion_danycore
+from Herramientas.get_direccion_dany import get_direccion_danycore
 
 class Empleado(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -25,3 +25,12 @@ class Direccion(models.Model):
     def save(self, *args, **kwargs):
         self.direccion_completa = get_direccion_danycore(self.latitud, self.longitud)
         super().save(*args, **kwargs)
+
+class Auto(models.Model):
+    marca = models.CharField(max_length=100)
+    modelo = models.CharField(max_length=100)
+    año = models.IntegerField()
+    empleado = models.ForeignKey(Empleado, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.marca} {self.modelo} {self.año}"

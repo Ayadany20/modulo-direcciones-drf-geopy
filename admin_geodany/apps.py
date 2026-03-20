@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class AdminGeomikeConfig(AppConfig):
-    name = 'admin_geomike'
+class AdminGeodanyConfig(AppConfig):
+    name = 'admin_geodany'

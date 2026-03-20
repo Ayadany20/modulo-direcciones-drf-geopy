@@ -2,41 +2,300 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Inicio</title>
+    <title>AUTOS DANY - Tienda de Autos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        .contenedor {
-            width: 100%;
-            overflow: hidden;
-            white-space: nowrap;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
         }
 
-        .texto-movimiento {
-            display: inline-block;
-            padding-left: 100%;
-            animation: mover 10s linear infinite;
-            font-size: 0.8rem;
+        body {
+            background: #f4f6f9;
+            padding-bottom: 80px; /* Espacio para el footer fijo */
+        }
+
+        header {
+            background: #0b1c2f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 span {
+            color: #3b82f6;
+        }
+
+        /* Filtros */
+        .filtros {
+            background: white;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        .filtros input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 200px;
+        }
+
+        .filtros button {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: bold;
+            transition: 0.3s;
         }
 
-        @keyframes mover {
-            0% {
-                transform: translateX(0%);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
+        .filtros button:hover {
+            background: #2563eb;
+        }
+
+        /* Contenedor de Autos */
+        .autos-container {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .auto-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .auto-card:hover {
+            transform: translateY(-5px);
+            border: 1px solid #3b82f6;
+        }
+
+        .auto-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .auto-info {
+            padding: 15px;
+        }
+
+        .precio {
+            font-weight: bold;
+            color: #16a34a;
+            margin-top: 8px;
+            font-size: 1.2rem;
+        }
+
+        /* Ventana Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-contenido {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 20px;
+            position: relative;
+            animation: aparecer 0.3s ease;
+        }
+
+        @keyframes aparecer {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .cerrar {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #0b1c2f;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            border-top: 3px solid #d32f2f;
+            z-index: 1000;
+        }
+
+        .btn-contacto {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div class="contenedor">
-        <div class="texto-movimiento">
-            {{ message }}
-        </div>
+<header>
+    <h1>AUTOS <span>DANY</span> 🚗</h1>
+    <p>Calidad y confianza en cada kilómetro</p>
+</header>
+
+<section class="filtros">
+    <input type="text" id="buscar" placeholder="Marca o modelo...">
+    <input type="number" id="precioMin" placeholder="Precio mínimo">
+    <input type="number" id="precioMax" placeholder="Precio máximo">
+    <button onclick="filtrarAutos()">Buscar Ahora</button>
+</section>
+
+<section class="autos-container" id="autosContainer"></section>
+
+<div id="modalAuto" class="modal">
+    <div class="modal-contenido">
+        <span class="cerrar" onclick="cerrarModal()">&times;</span>
+        <div id="detalleAuto"></div>
     </div>
+</div>
+
+<footer>
+    &copy; 2026 AUTOS DANY - Todos los derechos reservados
+</footer>
+
+<script>
+    const autos = [
+        { 
+            marca: "Toyota", modelo: "Corolla", precio: 250000, 
+            imagen: "https://upload.wikimedia.org/wikipedia/commons/a/a4/2019_Toyota_Corolla_Icon_Tech_VVT-i_Hybrid_1.8.jpg",
+            detalles: "Motor 1.8L Híbrido, excelente rendimiento de combustible, pantalla touch y seguridad avanzada Toyota Safety Sense."
+        },
+        { 
+            marca: "Honda", modelo: "Civic", precio: 280000, 
+            imagen: "https://i.postimg.cc/59FqGq3r/honda-civic-type-r-4k-5k-hd-5120x2880.jpg",
+            detalles: "Transmisión automática, interiores de piel, quemacocos eléctrico y sistema de audio premium."
+        },
+        { 
+            marca: "Ford", modelo: "Mustang", precio: 750000, 
+            imagen: "https://tse3.mm.bing.net/th/id/OIP.ZVpF_WZzGj-SjGTYi3BXqQHaDt?rs=1&pid=ImgDetMain&o=7&rm=3",
+            detalles: "Potente motor V8, asientos deportivos, escapes activos y tecnología de pista Track Apps."
+        },
+        { 
+            marca: "Nissan", modelo: "Versa", precio: 220000, 
+            imagen: "https://tse2.mm.bing.net/th/id/OIP.lA5qkaQFM_kGNg83XF6aQQHaD5?rs=1&pid=ImgDetMain&o=7&rm=3",
+            detalles: "El sedan más amplio en su categoría, sensores de reversa y conectividad Apple CarPlay/Android Auto."
+        },
+        { 
+            marca: "Chevrolet", modelo: "Camaro", precio: 800000, 
+            imagen: "https://tse3.mm.bing.net/th/id/OIP.sNpV-rR3T-6-pS9mad_hhgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3",
+            detalles: "Diseño aerodinámico, transmisión de 10 velocidades y modos de conducción deportiva."
+        }
+    ];
+
+    const autosContainer = document.getElementById("autosContainer");
+
+    function mostrarAutos(lista) {
+        autosContainer.innerHTML = "";
+        if (lista.length === 0) {
+            autosContainer.innerHTML = "<div class='no-resultados'>No encontramos ese auto, intenta con otra marca.</div>";
+            return;
+        }
+
+        lista.forEach((auto) => {
+            // Buscamos el índice original para que el modal muestre el auto correcto
+            const indexOriginal = autos.findIndex(a => a.modelo === auto.modelo);
+            
+            autosContainer.innerHTML += `
+                <div class="auto-card" onclick="abrirDetalle(${indexOriginal})">
+                    <img src="${auto.imagen}" alt="${auto.marca}">
+                    <div class="auto-info">
+                        <h3>${auto.marca} ${auto.modelo}</h3>
+                        <p class="precio">$${auto.precio.toLocaleString()}</p>
+                        <p style="font-size: 0.8rem; color: #777;">Clic para ver detalles</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function abrirDetalle(indice) {
+        const auto = autos[indice];
+        const detalleDiv = document.getElementById("detalleAuto");
+        
+        detalleDiv.innerHTML = `
+            <img src="${auto.imagen}" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:15px;">
+            <h2>${auto.marca} ${auto.modelo}</h2>
+            <p class="precio" style="font-size: 1.8rem;">$${auto.precio.toLocaleString()}</p>
+            <p style="margin: 15px 0; line-height: 1.6; color: #444;">${auto.detalles}</p>
+            <button class="btn-contacto" onclick="alert('Solicitud enviada a Ventas Dany')">Solicitar Prueba de Manejo</button>
+        `;
+        
+        document.getElementById("modalAuto").style.display = "block";
+    }
+
+    function cerrarModal() {
+        document.getElementById("modalAuto").style.display = "none";
+    }
+
+    // Cerrar modal si se hace clic fuera de la caja blanca
+    window.onclick = function(event) {
+        const modal = document.getElementById("modalAuto");
+        if (event.target == modal) {
+            cerrarModal();
+        }
+    }
+
+    function filtrarAutos() {
+        const texto = document.getElementById("buscar").value.toLowerCase();
+        const min = parseInt(document.getElementById("precioMin").value) || 0;
+        const max = parseInt(document.getElementById("precioMax").value) || Infinity;
+
+        const resultado = autos.filter(auto =>
+            (auto.marca.toLowerCase().includes(texto) ||
+             auto.modelo.toLowerCase().includes(texto)) &&
+            auto.precio >= min &&
+            auto.precio <= max
+        );
+
+        mostrarAutos(resultado);
+    }
+
+    // Inicializar la tienda
+    mostrarAutos(autos);
+</script>
 
 </body>
 </html>
